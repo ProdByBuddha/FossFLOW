@@ -20,12 +20,23 @@ export const NonIsometricIcon = ({ icon }: Props) => {
           transform: getIsoProjectionCss()
         }}
       >
-        <Box
-          component="img"
-          src={icon.url}
-          alt={`icon-${icon.id}`}
-          sx={{ width: PROJECTED_TILE_SIZE.width * 0.7 * (icon.scale || 1) }}
-        />
+        {icon.path ? (
+          <svg
+            width={PROJECTED_TILE_SIZE.width * 0.7 * (icon.scale || 1)}
+            height={PROJECTED_TILE_SIZE.width * 0.7 * (icon.scale || 1)}
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path d={icon.path} />
+          </svg>
+        ) : (
+          <Box
+            component="img"
+            src={icon.url}
+            alt={`icon-${icon.id}`}
+            sx={{ width: PROJECTED_TILE_SIZE.width * 0.7 * (icon.scale || 1) }}
+          />
+        )}
       </Box>
     </Box>
   );

@@ -85,16 +85,27 @@ function EditorPage() {
     if (lastOpenedData) {
       try {
         const data = JSON.parse(lastOpenedData);
-        const importedIcons = (data.icons || []).filter((icon: any) => {
-          return icon.collection === 'imported';
-        });
-        const mergedIcons = [...coreIcons, ...importedIcons];
-        return {
-          ...data,
-          icons: mergedIcons,
-          colors: data.colors?.length ? data.colors : defaultColors,
-          fitToScreen: data.fitToScreen !== false
-        };
+
+        // Check for legacy data format (no views or top-level connectors)
+        const isLegacy =
+          (data.items?.length > 0 && (!data.views || data.views.length === 0)) ||
+          (data.connectors && data.connectors.length > 0 && !data.views);
+
+        if (isLegacy) {
+          console.warn('Legacy data detected in localStorage. Clearing and using default.');
+          localStorage.removeItem('fossflow-last-opened-data');
+        } else {
+          const importedIcons = (data.icons || []).filter((icon: any) => {
+            return icon.collection === 'imported';
+          });
+          const mergedIcons = [...coreIcons, ...importedIcons];
+          return {
+            ...data,
+            icons: mergedIcons,
+            colors: data.colors?.length ? data.colors : defaultColors,
+            fitToScreen: data.fitToScreen !== false
+          };
+        }
       } catch (e) {
         console.error('Failed to load last opened data:', e);
       }
@@ -102,7 +113,7 @@ function EditorPage() {
 
     // Default state if no saved data
     return {
-      title: 'Untitled Diagram',
+      title: 'Agency Apparatus',
       icons: coreIcons,
       colors: defaultColors,
       items: [],
@@ -110,6 +121,30 @@ function EditorPage() {
       fitToScreen: true
     };
   });
+
+  // Load agency diagram by default if no last opened data
+  useEffect(() => {
+    const lastOpenedData = localStorage.getItem('fossflow-last-opened-data');
+    if (!lastOpenedData) {
+      fetch(`${process.env.PUBLIC_URL || ''}/agency_isometric.json`)
+        .then(response => response.json())
+        .then(data => {
+          // Merge icons from the file with core icons
+          const fileIcons = (data.icons || []).map((icon: any) => ({
+            ...icon,
+            collection: icon.collection || 'imported'
+          }));
+
+          setDiagramData(prev => ({
+            ...data,
+            icons: [...prev.icons, ...fileIcons], // Merge core icons with file icons
+            colors: data.colors?.length ? data.colors : defaultColors
+          }));
+          setDiagramName(data.title || 'Agency Apparatus');
+        })
+        .catch(err => console.error('Failed to load agency diagram:', err));
+    }
+  }, []);
 
   // Check for server storage availability
   useEffect(() => {
@@ -280,10 +315,10 @@ function EditorPage() {
         diagrams.map((d) => {
           return d.id === existingDiagram.id
             ? {
-                ...newDiagram,
-                id: existingDiagram.id,
-                createdAt: existingDiagram.createdAt
-              }
+              ...newDiagram,
+              id: existingDiagram.id,
+              createdAt: existingDiagram.createdAt
+            }
             : d;
         })
       );

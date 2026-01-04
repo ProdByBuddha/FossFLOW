@@ -12,7 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.BACKEND_PORT || 3001;
+const PORT = process.env.BACKEND_PORT || 3002;
 
 // Configuration from environment variables
 const STORAGE_ENABLED = process.env.ENABLE_SERVER_STORAGE === 'true';
@@ -172,7 +172,7 @@ if (STORAGE_ENABLED) {
     try {
       const filePath = path.join(STORAGE_PATH, `${req.params.id}.json`);
       await fs.unlink(filePath);
-      
+
       res.json({ success: true });
     } catch (error) {
       if (error.code === 'ENOENT') {
@@ -189,7 +189,7 @@ if (STORAGE_ENABLED) {
     try {
       const id = req.body.id || `diagram_${Date.now()}`;
       const filePath = path.join(STORAGE_PATH, `${id}.json`);
-      
+
       // Check if already exists
       try {
         await fs.access(filePath);
@@ -197,14 +197,14 @@ if (STORAGE_ENABLED) {
       } catch {
         // File doesn't exist, proceed
       }
-      
+
       const data = {
         ...req.body,
         id,
         created: new Date().toISOString(),
         lastModified: new Date().toISOString()
       };
-      
+
       await fs.writeFile(filePath, JSON.stringify(data, null, 2));
       res.status(201).json({ success: true, id });
     } catch (error) {
@@ -218,19 +218,19 @@ if (STORAGE_ENABLED) {
   app.get('/api/diagrams', (req, res) => {
     res.status(503).json({ error: 'Server storage is disabled' });
   });
-  
+
   app.get('/api/diagrams/:id', (req, res) => {
     res.status(503).json({ error: 'Server storage is disabled' });
   });
-  
+
   app.put('/api/diagrams/:id', (req, res) => {
     res.status(503).json({ error: 'Server storage is disabled' });
   });
-  
+
   app.delete('/api/diagrams/:id', (req, res) => {
     res.status(503).json({ error: 'Server storage is disabled' });
   });
-  
+
   app.post('/api/diagrams', (req, res) => {
     res.status(503).json({ error: 'Server storage is disabled' });
   });
