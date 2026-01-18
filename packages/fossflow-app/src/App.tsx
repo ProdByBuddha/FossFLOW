@@ -126,7 +126,7 @@ function EditorPage() {
   useEffect(() => {
     const lastOpenedData = localStorage.getItem('fossflow-last-opened-data');
     if (!lastOpenedData) {
-      fetch(`${process.env.PUBLIC_URL || ''}/agency_isometric.json`)
+      fetch(`${process.env.PUBLIC_URL || ''}/config/agency_isometric.json`)
         .then(response => response.json())
         .then(data => {
           // Merge icons from the file with core icons
